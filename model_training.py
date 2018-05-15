@@ -34,8 +34,8 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
 # ---- Import from holoviews
-import holoviews as hv
-hv.extension('bokeh')
+#import holoviews as hv
+#hv.extension('bokeh')
 
 # ---- Import scikit-learn library
 from sklearn.pipeline import make_pipeline, Pipeline
@@ -84,7 +84,7 @@ from imblearn.metrics import classification_report_imbalanced
 
 # ---- Import Scikit-Learn Optimizer library
 from skopt import gp_minimize, forest_minimize
-from skopt.plots import plot_evaluations, plot_convergence, plot_objective#, plot_histogram
+from skopt.plots import plot_evaluations, plot_convergence, plot_objective
 from skopt.space import Real, Integer, Categorical
 from skopt.utils import use_named_args
 
@@ -112,6 +112,7 @@ numpy.random.seed(seed)
 np.set_printoptions(precision=2)
 
 # ---- Import model, dataloader, and metrics  module
+from visualization import *
 from models import *
 from dataloader import *
 from metrics import *
@@ -124,7 +125,7 @@ plotter = Plotter()
 
 # ---- Set of available input files
 input_filenames = ['history.180412.json', 'history.180223.json','history.171102.json', 'poolview_totals.json']
-data = pd.read_json(input_filenames[0], orient='index')
+data = pd.read_json('data/'+input_filenames[0], orient='index')
 
 # ---- Check table, shape, size, and dimension
 print(data.head())
@@ -210,11 +211,11 @@ data_index_reset['table_bad_sites'] = data_index_reset['errors'].apply(lambda x:
 
 
 # ---- Flatten good/bad site features
-data_index_reset['dummy_good_sites_flatten'] = data_index_reset['dummy_good_sites'].apply(lambda x: 
+data_index_reset['table_good_sites_flatten'] = data_index_reset['table_good_sites'].apply(lambda x: 
                                                                                           build_table_flatten(x))
 
 
-data_index_reset['dummy_bad_sites_flatten'] = data_index_reset['dummy_bad_sites'].apply(lambda x: 
+data_index_reset['table_bad_sites_flatten'] = data_index_reset['table_bad_sites'].apply(lambda x: 
                                                                                         build_table_flatten(x))
 
 
@@ -318,22 +319,83 @@ data_index_reset.head()
 # ---- Definte new feature column containing campain info
 data_index_reset['campaign'] = data_index_reset[['index']].apply(lambda x: extract_campaign(x), axis=1)
 
+# ---- List of campaigns
+campaign_list = [
+ #'PhaseIIFall17D',
+ #'PhaseIFall16wmLHEGS',
+ 'PhaseIITDRFall17wmLHEGS',      # 8001, 8004
+ #'PhaseIFall16DR',
+ 'RunIIFall17DRPremix',          # 8001, 8002, 8003, 8004
+ 'RunIISummer17GS',              # 8001, 8002,
+ #'RunIISummer17DRPremix',
+ #'ACDC2',
+ #'ACDC0',                        # 8001, 8003
+ 'PhaseIITDRFall17GS',           # 8001,
+ 'RunIISummer17DRStdmix',        # 8001, 8002   !10
+ 'PhaseIFall16GS',               # 8001
+ 'PhaseIISummer17wmLHEGENOnly',  # 8001
+ 'RunIISpring18wmLHEGS',         # 8001, 8004
+ #'RunIISummer17pLHE',
+ #'Summer12',
+ 'PhaseIITDRSpring17wmLHEGS',    # 8004
+ #'PhaseISpring17wmLHEGENOnly',   
+ #'RunIIFall17pLHE',
+ #'PhaseISpring17DR',
+ 'PhaseIISNBSpring17GS',         # 8001, 8004  !20
+ #'RunIIWinter15pLHE',            
+ 'PhaseIITDRFall17DR',           # 8004
+ #'PhaseIISpr18AODMiniAOD',
+ 'PhaseIITDRSpring17GS',         # 8001, 8004
+ #'RunIIFall17wmLHEGS',           # 8001, 8002, 8003, 8004
+ #'PhaseIISpring17GS',
+ #'RunIIFall17NanoAOD',
+ 'RunIIWinter17wmLHEGS',         # 8001, 8003
+ #'pp502Fall15',
+ #'pPb816Spring16GS',
+ 'HiFall15',                     # 8003
+ 'pPb816Spring16wmLHEGS',        # 8026
+ #'PhaseIITDRFall17MiniAOD',
+ 'RunIISummer15wmLHEGS',         # 8001, 8002
+ #'RunIISummer16FSPremix',
+ 'RunIIWinter17DR',              # 8003
+ 'RunIISpring18GS',              # 8001, 8003
+ #'HINXeXeFall17DR',
+ #'ACDC1',
+ 'RunIISummer16NanoAOD',         # 8001
+ #'PhaseIISNBSpring17wmLHEGS',
+ #'HINppWinter16DR',
+ #'RunIIWinter17GS',
+ #'RunIISummer16MiniAODv2',
+ 'RunIISummer15GS',              # 8001
+ #'HINPbPbSpring18GS',
+ #'27Jan2016',
+ 'RunIIFall17GS',                # 8001, 8002, 8003
+ 'RunIIWinter15wmLHE',           # 8001
+ 'RunIIFall17DRStdmix',          # 8001, 8002, 8003,
+ #'HINXeXeFall17GS',
+ 'RunIISummer16DR80Premix',      # 8001, 8002
+ 'RunIISummer16DR80',            # 8001
+ 'PhaseIITDRSpring17DR',         # 8001, 8004
+ #'RunIISummer17CosmicGS',
+ 'RunIISummer17wmLHEGS'          # 8001, 8002
+]
+
 
 # ---- Loop through all those campaigns that have exit code in the 8000 range in good site info
-for campaign in campaign_list:
-    print(campaign)
-    plot_campaign_exit_codes(campaign, "errors_good_sites_exit_codes")
+#for campaign in campaign_list:
+#    print(campaign)
+#    plot_campaign_exit_codes(campaign, "errors_good_sites_exit_codes")
 
 # ---- Loop through all those campaigns that have exit code in the 8000 range in bad site info
-for campaign in campaign_list:
-    print(campaign)
-    plot_campaign_exit_codes(campaign, "errors_bad_sites_exit_codes")
+#for campaign in campaign_list:
+#    print(campaign)
+#    plot_campaign_exit_codes(campaign, "errors_bad_sites_exit_codes")
 
 
 
 # ---- Setup data for training and evaluation
-#  features
-X = data_index_reset['dummy_combined_sites_flatten'].tolist()
+#  features           
+X = data_index_reset['table_combined_sites_flatten'].tolist()
 
 # target
 y = data_index_reset['target_encoded'].tolist()
@@ -433,7 +495,7 @@ print('f1-score: ', f1_score(y_test, y_pred, average='weighted'))
 # sensitivity and specificity. Combining the two metrics should account 
 # for the balancing of the dataset.
 # Calculate metrics for each label, and find their average, weighted by support 
-# (the number of true instances for each label). This alters ‘macro’ to account 
+# (the number of true instances for each label). This alters 'macro' to account 
 # for label imbalance; it can result in an F-score that is not between precision and recall.
 print(geometric_mean_score(y_test, y_pred, average='weighted'))
 
@@ -591,7 +653,7 @@ target_pred = estimator.predict(test)
 target_prob = estimator.predict_proba(test)
 
 # ---- Calculate metrics for each label, and find their average, weighted by support 
-# (the number of true instances for each label). This alters ‘macro’ to account 
+# (the number of true instances for each label). This alters 'macro' to account 
 # for label imbalance; it can result in an F-score that is not between precision and recall.
 print(geometric_mean_score(target_test, target_pred, average='weighted'))
 
