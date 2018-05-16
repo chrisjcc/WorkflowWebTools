@@ -662,3 +662,164 @@ plotter.plot_confusion_matrix(target_test, target_pred, classes=class_names,
                               normalize=True, title='Normalized confusion matrix')
 
 
+
+## Iterative Modeling (Cascade modeling)
+
+def concate_fnc(x, feature1, feature2):
+    
+    if str(x[feature1]+'_'+x[feature2]) != 'acdc_1x':
+      return 'non_acdc_1x'
+    else:
+      return 'acdc_1x'
+
+data_index_reset['target_cascade_label'] = data_index_reset.apply(lambda x:
+                                                                  concate_fnc(x,
+                                                                              'action',
+                                                                              'splitting'),
+                                                                  axis=1)
+
+
+# 34. plot the frequency count per target category
+plot_class_count(data_index_reset, 'target_cascade_label')
+
+data_index_reset.head()
+
+# 38. perform train test split 70/30 split
+df_tr, df_ts, df_label_tr, df_label_ts = train_test_split(data_index_reset,
+                                                          data_index_reset,
+                                                          test_size=0.4,
+                                                          shuffle=True,
+                                                          random_state=seed)
+
+df_tr['target_cascade_label'].head()
+
+# Set train/test dataframes
+X_tr = df_tr['tables_combined_sites_flatten'].tolist()
+X_ts = df_ts['tables_combined_sites_flatten'].tolist()
+y_tr = df_label_tr['target_cascade_label'].tolist()
+y_ts = df_label_ts['target_cascade_label'].tolist()
+
+
+## Binary classification model
+
+# set configuration
+input_dim    = np.array(X_tr).shape[1]
+n_classes    = 2
+nlayers      = 3  
+nneurons     = 51
+l2_norm      = 0.0014677547170664112
+dropout_rate = 0.014655354118727714
+loss         = 'sparse_categorical_crossentropy'
+
+print(input_dim)
+print(n_classes)
+
+# create model for use in scikit-learn
+pipe = {
+    'kerasclassifier':  make_imb_pipeline(scaler,
+                                          KerasClassifier(build_fn=create_model,
+                                                          input_dim=input_dim,
+                                                          n_classes=n_classes,
+                                                          nlayers=nlayers,
+                                                          nneurons=nneurons,
+                                                          dropout_rate=dropout_rate,
+                                                          l2_norm=l2_norm,
+                                                          #learning_rate=learning_rate
+                                                          loss=loss,
+                                                          batch_size=256, 
+                                                          epochs=35,
+                                                          verbose=1))
+    }
+
+
+pipe['kerasclassifier'].fit(X_tr, y_tr)
+
+y_predict = pipe['kerasclassifier'].predict(X_ts)
+y_pred = pipe['kerasclassifier'].predict(X_ts)
+
+plotter.plot_confusion_matrix(y_ts, 
+                              y_predict,
+                              normalize=False, classes=['acdc_1x', 'non_acdc_1x'],
+                              title='Confusion matrix, without normalization')
+
+plotter.plot_confusion_matrix(y_ts,
+                              y_pred,
+                              normalize=False, classes=['acdc_1x', 'non_acdc_1x'],
+                              title='Confusion matrix, without normalization')
+
+print('accuracy: ', accuracy_score(y_ts, y_predict))
+
+print('recall: ', recall_score(y_ts, y_predict, average='weighted'))
+
+print('precision: ', precision_score(y_ts, y_predict, average='weighted'))
+
+print('f1-score: ', f1_score(y_ts, y_predict, average='weighted'))
+
+print('geometric mean score: ', geometric_mean_score(y_ts, y_predict, average='weighted'))
+
+left = df_ts
+right = pd.DataFrame(index=df_ts.index, data={'target_cascade_prediction': y_predict})
+result = left.join(right)
+
+## Multi-class classsification model
+
+condition = str("target_cascade_prediction != 'acdc_1x'& target_label !='acdc_1x'")
+tr_data   = result.query(condition)['tables_combined_sites_flatten'].tolist()
+label_tr_data = result.query(condition)[['target_label']]
+
+# set configuration
+input_dim    = np.array(result.query(condition)['tables_combined_sites_flatten'].tolist()).shape[1]
+n_classes    = len(list(set(label_tr_data['target_label'].tolist())))
+nlayers      = 3  
+nneurons     = 51
+l2_norm      = 0.0014677547170664112
+dropout_rate = 0.014655354118727714
+loss         = 'sparse_categorical_crossentropy'
+
+labels = list(set(label_tr_data['target_label'].tolist()))
+
+print(input_dim)
+print(n_classes)
+print(nlayers)
+print(nneurons)
+
+# create model for use in scikit-learn
+pipe_estimator = {
+    'kerasclassifier':  make_imb_pipeline(scaler,
+                                          KerasClassifier(build_fn=create_model,
+                                                          input_dim=input_dim,
+                                                          n_classes=n_classes,
+                                                          nlayers=nlayers,
+                                                          nneurons=nneurons,
+                                                          dropout_rate=dropout_rate,
+                                                          l2_norm=l2_norm,
+                                                          #learning_rate=learning_rate
+                                                          loss=loss,
+                                                          batch_size=256, 
+                                                          epochs=35, 
+                                                          verbose=1))
+    }
+
+
+pipe_estimator['kerasclassifier'].fit(tr_data, 
+                                      label_tr_data['target_label'].tolist())
+
+label_pred = pipe_estimator['kerasclassifier'].predict(df_ts['tables_combined_sites_flatten'].tolist())
+label_prob = pipe_estimator['kerasclassifier'].predict_proba(df_ts['tables_combined_sites_flatten'].tolist())
+
+print('log_loss: ',  log_loss(df_label_ts['target_label'].tolist(), label_prob, labels=labels))
+print('accuracy: ',  accuracy_score(df_label_ts['target_label'].tolist(), label_pred))
+print('recall: ',    recall_score(df_label_ts['target_label'].tolist(), label_pred, average='weighted'))
+print('precision: ', precision_score(df_label_ts['target_label'].tolist(), label_pred, average='weighted'))
+print('f1-score: ',  f1_score(df_label_ts['target_label'].tolist(), label_pred, average='weighted'))
+print('geometric mean score: ', geometric_mean_score(df_label_ts['target_label'].tolist(), label_pred, average='weighted'))
+
+class_names=sorted(list(set(data_index_reset['target_label'])))
+
+# Plot non-normalized confusion matrix
+plotter.plot_confusion_matrix(df_label_ts['target_label'].tolist(), 
+                              label_pred, 
+                              normalize=False,
+                              classes=class_names, 
+                              title='Confusion matrix, without normalization')
+plt.show()
