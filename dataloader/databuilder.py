@@ -1,3 +1,36 @@
+# ---- Import basic library
+import sys
+import json
+from collections import Counter
+import collections
+import itertools
+from itertools import chain
+import pydot
+import graphviz
+import re
+
+# ---- Import numpy library                                                                                                     
+import numpy
+import numpy as np
+from numpy import math
+from numpy import argmax
+
+
+# ---- Import libraries
+from numpy import math
+from numpy import argmax
+
+# ---- Import pandas library
+import pandas as pd
+
+# ---- Import from matplotlib library
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+
+# ---- Import seaborn
+import seaborn as sns
+
+
 # Define several utility functions
 def list_of_sites(x):
   sites = []
@@ -84,7 +117,7 @@ def plot_class_count(x, feature):
   print(data.groupby(feature).size())
   w, h = 15, 7
   plt.figure(figsize=(15,7))
-  plt.tight_layout()
+  #plt.tight_layout()
   
   ax = sns.countplot(x=feature, data=data)
   ax.set_xticklabels(ax.get_xticklabels(), fontsize=10)
@@ -124,7 +157,7 @@ def exit_code_counts(x, feature, title='good'):
   patches, labels = ax.get_legend_handles_labels()
   ax.legend(patches, labels, loc='best')
   plt.xticks(rotation='vertical')
-  plt.tight_layout()
+  #plt.tight_layout()
   
   return plt.show()
 
@@ -188,3 +221,12 @@ def plot_campaign_exit_codes(campaign_name = "RunIISummer17DRPremix",
               bbox_inches='tight')
   
   return plt.show()
+
+def merge_fnc(x, feature1, feature2):
+
+    if x[feature2] in ['20x', '50x', '100x', 'max']:
+        return x[feature1]+'_'+'20x'
+    elif x[feature2] in ['2x', '3x', '10x']:
+        return x[feature1]+'_'+'10x'
+    else:
+        return x[feature1]+'_'+x[feature2]
