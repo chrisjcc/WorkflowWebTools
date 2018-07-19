@@ -34,8 +34,8 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
 # ---- Import from holoviews
-import holoviews as hv
-hv.extension('bokeh')
+#import holoviews as hv
+#hv.extension('bokeh')
 
 # ---- Import scikit-learn library
 from sklearn.pipeline import make_pipeline, Pipeline
@@ -84,7 +84,7 @@ from imblearn.metrics import classification_report_imbalanced
 
 # ---- Import Scikit-Learn Optimizer library
 from skopt import gp_minimize, forest_minimize
-from skopt.plots import plot_evaluations, plot_convergence, plot_objective#, plot_histogram
+from skopt.plots import plot_evaluations, plot_convergence, plot_objective
 from skopt.space import Real, Integer, Categorical
 from skopt.utils import use_named_args
 
@@ -112,6 +112,7 @@ numpy.random.seed(seed)
 np.set_printoptions(precision=2)
 
 # ---- Import model, dataloader, and metrics  module
+from visualization import *
 from models import *
 from dataloader import *
 from metrics import *
@@ -124,7 +125,7 @@ plotter = Plotter()
 
 # ---- Set of available input files
 input_filenames = ['history.180412.json', 'history.180223.json','history.171102.json', 'poolview_totals.json']
-data = pd.read_json(input_filenames[0], orient='index')
+data = pd.read_json('data/'+input_filenames[0], orient='index')
 
 # ---- Check table, shape, size, and dimension
 print(data.head())
@@ -210,11 +211,11 @@ data_index_reset['table_bad_sites'] = data_index_reset['errors'].apply(lambda x:
 
 
 # ---- Flatten good/bad site features
-data_index_reset['dummy_good_sites_flatten'] = data_index_reset['dummy_good_sites'].apply(lambda x: 
+data_index_reset['table_good_sites_flatten'] = data_index_reset['table_good_sites'].apply(lambda x: 
                                                                                           build_table_flatten(x))
 
 
-data_index_reset['dummy_bad_sites_flatten'] = data_index_reset['dummy_bad_sites'].apply(lambda x: 
+data_index_reset['table_bad_sites_flatten'] = data_index_reset['table_bad_sites'].apply(lambda x: 
                                                                                         build_table_flatten(x))
 
 
@@ -318,22 +319,83 @@ data_index_reset.head()
 # ---- Definte new feature column containing campain info
 data_index_reset['campaign'] = data_index_reset[['index']].apply(lambda x: extract_campaign(x), axis=1)
 
+# ---- List of campaigns
+campaign_list = [
+ #'PhaseIIFall17D',
+ #'PhaseIFall16wmLHEGS',
+ 'PhaseIITDRFall17wmLHEGS',      # 8001, 8004
+ #'PhaseIFall16DR',
+ 'RunIIFall17DRPremix',          # 8001, 8002, 8003, 8004
+ 'RunIISummer17GS',              # 8001, 8002,
+ #'RunIISummer17DRPremix',
+ #'ACDC2',
+ #'ACDC0',                        # 8001, 8003
+ 'PhaseIITDRFall17GS',           # 8001,
+ 'RunIISummer17DRStdmix',        # 8001, 8002   !10
+ 'PhaseIFall16GS',               # 8001
+ 'PhaseIISummer17wmLHEGENOnly',  # 8001
+ 'RunIISpring18wmLHEGS',         # 8001, 8004
+ #'RunIISummer17pLHE',
+ #'Summer12',
+ 'PhaseIITDRSpring17wmLHEGS',    # 8004
+ #'PhaseISpring17wmLHEGENOnly',   
+ #'RunIIFall17pLHE',
+ #'PhaseISpring17DR',
+ 'PhaseIISNBSpring17GS',         # 8001, 8004  !20
+ #'RunIIWinter15pLHE',            
+ 'PhaseIITDRFall17DR',           # 8004
+ #'PhaseIISpr18AODMiniAOD',
+ 'PhaseIITDRSpring17GS',         # 8001, 8004
+ #'RunIIFall17wmLHEGS',           # 8001, 8002, 8003, 8004
+ #'PhaseIISpring17GS',
+ #'RunIIFall17NanoAOD',
+ 'RunIIWinter17wmLHEGS',         # 8001, 8003
+ #'pp502Fall15',
+ #'pPb816Spring16GS',
+ 'HiFall15',                     # 8003
+ 'pPb816Spring16wmLHEGS',        # 8026
+ #'PhaseIITDRFall17MiniAOD',
+ 'RunIISummer15wmLHEGS',         # 8001, 8002
+ #'RunIISummer16FSPremix',
+ 'RunIIWinter17DR',              # 8003
+ 'RunIISpring18GS',              # 8001, 8003
+ #'HINXeXeFall17DR',
+ #'ACDC1',
+ 'RunIISummer16NanoAOD',         # 8001
+ #'PhaseIISNBSpring17wmLHEGS',
+ #'HINppWinter16DR',
+ #'RunIIWinter17GS',
+ #'RunIISummer16MiniAODv2',
+ 'RunIISummer15GS',              # 8001
+ #'HINPbPbSpring18GS',
+ #'27Jan2016',
+ 'RunIIFall17GS',                # 8001, 8002, 8003
+ 'RunIIWinter15wmLHE',           # 8001
+ 'RunIIFall17DRStdmix',          # 8001, 8002, 8003,
+ #'HINXeXeFall17GS',
+ 'RunIISummer16DR80Premix',      # 8001, 8002
+ 'RunIISummer16DR80',            # 8001
+ 'PhaseIITDRSpring17DR',         # 8001, 8004
+ #'RunIISummer17CosmicGS',
+ 'RunIISummer17wmLHEGS'          # 8001, 8002
+]
+
 
 # ---- Loop through all those campaigns that have exit code in the 8000 range in good site info
-for campaign in campaign_list:
-    print(campaign)
-    plot_campaign_exit_codes(campaign, "errors_good_sites_exit_codes")
+#for campaign in campaign_list:
+#    print(campaign)
+#    plot_campaign_exit_codes(campaign, "errors_good_sites_exit_codes")
 
 # ---- Loop through all those campaigns that have exit code in the 8000 range in bad site info
-for campaign in campaign_list:
-    print(campaign)
-    plot_campaign_exit_codes(campaign, "errors_bad_sites_exit_codes")
+#for campaign in campaign_list:
+#    print(campaign)
+#    plot_campaign_exit_codes(campaign, "errors_bad_sites_exit_codes")
 
 
 
 # ---- Setup data for training and evaluation
-#  features
-X = data_index_reset['dummy_combined_sites_flatten'].tolist()
+#  features           
+X = data_index_reset['table_combined_sites_flatten'].tolist()
 
 # target
 y = data_index_reset['target_encoded'].tolist()
@@ -433,7 +495,7 @@ print('f1-score: ', f1_score(y_test, y_pred, average='weighted'))
 # sensitivity and specificity. Combining the two metrics should account 
 # for the balancing of the dataset.
 # Calculate metrics for each label, and find their average, weighted by support 
-# (the number of true instances for each label). This alters ‘macro’ to account 
+# (the number of true instances for each label). This alters 'macro' to account 
 # for label imbalance; it can result in an F-score that is not between precision and recall.
 print(geometric_mean_score(y_test, y_pred, average='weighted'))
 
@@ -591,7 +653,7 @@ target_pred = estimator.predict(test)
 target_prob = estimator.predict_proba(test)
 
 # ---- Calculate metrics for each label, and find their average, weighted by support 
-# (the number of true instances for each label). This alters ‘macro’ to account 
+# (the number of true instances for each label). This alters 'macro' to account 
 # for label imbalance; it can result in an F-score that is not between precision and recall.
 print(geometric_mean_score(target_test, target_pred, average='weighted'))
 
@@ -600,3 +662,164 @@ plotter.plot_confusion_matrix(target_test, target_pred, classes=class_names,
                               normalize=True, title='Normalized confusion matrix')
 
 
+
+## Iterative Modeling (Cascade modeling)
+
+def concate_fnc(x, feature1, feature2):
+    
+    if str(x[feature1]+'_'+x[feature2]) != 'acdc_1x':
+      return 'non_acdc_1x'
+    else:
+      return 'acdc_1x'
+
+data_index_reset['target_cascade_label'] = data_index_reset.apply(lambda x:
+                                                                  concate_fnc(x,
+                                                                              'action',
+                                                                              'splitting'),
+                                                                  axis=1)
+
+
+# 34. plot the frequency count per target category
+plot_class_count(data_index_reset, 'target_cascade_label')
+
+data_index_reset.head()
+
+# 38. perform train test split 70/30 split
+df_tr, df_ts, df_label_tr, df_label_ts = train_test_split(data_index_reset,
+                                                          data_index_reset,
+                                                          test_size=0.4,
+                                                          shuffle=True,
+                                                          random_state=seed)
+
+df_tr['target_cascade_label'].head()
+
+# Set train/test dataframes
+X_tr = df_tr['tables_combined_sites_flatten'].tolist()
+X_ts = df_ts['tables_combined_sites_flatten'].tolist()
+y_tr = df_label_tr['target_cascade_label'].tolist()
+y_ts = df_label_ts['target_cascade_label'].tolist()
+
+
+## Binary classification model
+
+# set configuration
+input_dim    = np.array(X_tr).shape[1]
+n_classes    = 2
+nlayers      = 3  
+nneurons     = 51
+l2_norm      = 0.0014677547170664112
+dropout_rate = 0.014655354118727714
+loss         = 'sparse_categorical_crossentropy'
+
+print(input_dim)
+print(n_classes)
+
+# create model for use in scikit-learn
+pipe = {
+    'kerasclassifier':  make_imb_pipeline(scaler,
+                                          KerasClassifier(build_fn=create_model,
+                                                          input_dim=input_dim,
+                                                          n_classes=n_classes,
+                                                          nlayers=nlayers,
+                                                          nneurons=nneurons,
+                                                          dropout_rate=dropout_rate,
+                                                          l2_norm=l2_norm,
+                                                          #learning_rate=learning_rate
+                                                          loss=loss,
+                                                          batch_size=256, 
+                                                          epochs=35,
+                                                          verbose=1))
+    }
+
+
+pipe['kerasclassifier'].fit(X_tr, y_tr)
+
+y_predict = pipe['kerasclassifier'].predict(X_ts)
+y_pred = pipe['kerasclassifier'].predict(X_ts)
+
+plotter.plot_confusion_matrix(y_ts, 
+                              y_predict,
+                              normalize=False, classes=['acdc_1x', 'non_acdc_1x'],
+                              title='Confusion matrix, without normalization')
+
+plotter.plot_confusion_matrix(y_ts,
+                              y_pred,
+                              normalize=False, classes=['acdc_1x', 'non_acdc_1x'],
+                              title='Confusion matrix, without normalization')
+
+print('accuracy: ', accuracy_score(y_ts, y_predict))
+
+print('recall: ', recall_score(y_ts, y_predict, average='weighted'))
+
+print('precision: ', precision_score(y_ts, y_predict, average='weighted'))
+
+print('f1-score: ', f1_score(y_ts, y_predict, average='weighted'))
+
+print('geometric mean score: ', geometric_mean_score(y_ts, y_predict, average='weighted'))
+
+left = df_ts
+right = pd.DataFrame(index=df_ts.index, data={'target_cascade_prediction': y_predict})
+result = left.join(right)
+
+## Multi-class classsification model
+
+condition = str("target_cascade_prediction != 'acdc_1x'& target_label !='acdc_1x'")
+tr_data   = result.query(condition)['tables_combined_sites_flatten'].tolist()
+label_tr_data = result.query(condition)[['target_label']]
+
+# set configuration
+input_dim    = np.array(result.query(condition)['tables_combined_sites_flatten'].tolist()).shape[1]
+n_classes    = len(list(set(label_tr_data['target_label'].tolist())))
+nlayers      = 3  
+nneurons     = 51
+l2_norm      = 0.0014677547170664112
+dropout_rate = 0.014655354118727714
+loss         = 'sparse_categorical_crossentropy'
+
+labels = list(set(label_tr_data['target_label'].tolist()))
+
+print(input_dim)
+print(n_classes)
+print(nlayers)
+print(nneurons)
+
+# create model for use in scikit-learn
+pipe_estimator = {
+    'kerasclassifier':  make_imb_pipeline(scaler,
+                                          KerasClassifier(build_fn=create_model,
+                                                          input_dim=input_dim,
+                                                          n_classes=n_classes,
+                                                          nlayers=nlayers,
+                                                          nneurons=nneurons,
+                                                          dropout_rate=dropout_rate,
+                                                          l2_norm=l2_norm,
+                                                          #learning_rate=learning_rate
+                                                          loss=loss,
+                                                          batch_size=256, 
+                                                          epochs=35, 
+                                                          verbose=1))
+    }
+
+
+pipe_estimator['kerasclassifier'].fit(tr_data, 
+                                      label_tr_data['target_label'].tolist())
+
+label_pred = pipe_estimator['kerasclassifier'].predict(df_ts['tables_combined_sites_flatten'].tolist())
+label_prob = pipe_estimator['kerasclassifier'].predict_proba(df_ts['tables_combined_sites_flatten'].tolist())
+
+print('log_loss: ',  log_loss(df_label_ts['target_label'].tolist(), label_prob, labels=labels))
+print('accuracy: ',  accuracy_score(df_label_ts['target_label'].tolist(), label_pred))
+print('recall: ',    recall_score(df_label_ts['target_label'].tolist(), label_pred, average='weighted'))
+print('precision: ', precision_score(df_label_ts['target_label'].tolist(), label_pred, average='weighted'))
+print('f1-score: ',  f1_score(df_label_ts['target_label'].tolist(), label_pred, average='weighted'))
+print('geometric mean score: ', geometric_mean_score(df_label_ts['target_label'].tolist(), label_pred, average='weighted'))
+
+class_names=sorted(list(set(data_index_reset['target_label'])))
+
+# Plot non-normalized confusion matrix
+plotter.plot_confusion_matrix(df_label_ts['target_label'].tolist(), 
+                              label_pred, 
+                              normalize=False,
+                              classes=class_names, 
+                              title='Confusion matrix, without normalization')
+plt.show()

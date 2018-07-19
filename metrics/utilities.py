@@ -1,3 +1,23 @@
+# ---- Import scikit-learn library
+from sklearn.pipeline import make_pipeline, Pipeline
+from sklearn.dummy import DummyClassifier
+from sklearn.preprocessing import RobustScaler
+from sklearn.model_selection import KFold, StratifiedKFold, ShuffleSplit
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import train_test_split
+from sklearn.neural_network import MLPClassifier
+from sklearn.preprocessing import OneHotEncoder, LabelEncoder
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import recall_score
+from sklearn.metrics import precision_score
+#from sklearn.metrics import confusion_matrix
+from sklearn.metrics import log_loss
+from sklearn.metrics import f1_score
+from sklearn.metrics import make_scorer
+from sklearn.metrics import roc_auc_score
+from sklearn.model_selection import StratifiedShuffleSplit
+#introduced recentl in version 0.20 release.
+from sklearn.preprocessing import CategoricalEncoder  
 
 def log_loss_fn(y_true, y_pred, 
                 labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]):
